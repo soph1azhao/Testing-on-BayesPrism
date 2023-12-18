@@ -1,0 +1,474 @@
+---
+title: "Tutorial: bulk RNA-seq deconvolution using BayesPrism"
+author: "Sophia Zhao"
+date: "2023-12-13"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Due to the computational ability, the code up to runing BayesPrism will not be run through. (We run excute_PBMC.R file in Compute Canada.)
+Here we use PBMC data, the procedure of pancreas is the same, just changing the data input.
+
+Load the BayesPrism package
+```{r library, eval = FALSE}
+# install.packages("snowfall")
+# install.packages("NMF")
+# install.packages("gplots")
+# install.packages("scran")
+# install.packages("BiocParallel")
+# install.packages("devtools")
+library(snowfall)
+library(NMF)
+library(gplots)
+library(scran)
+library(BiocParallel)
+library(devtools)
+# install_github("Danko-Lab/BayesPrism/BayesPrism")
+suppressWarnings(library(BayesPrism))
+```
+
+## Load the data
+
+`bk.dat`: The sample-by-gene raw count matrix of bulk RNA-seq expression. `rownames` are bulk sample IDs, while `colnames` are gene names/IDs.
+
+`sc.dat`: The cell-by-gene raw count matrix of bulk RNA-seq expression. `rownames` are bulk cell IDs, while `colnames` are gene names/IDs.
+
+`cell.type.labels` is a character vector of the same length as `nrow(sc.dat)` to denote the cell type of each cell in the reference.
+
+`cell.state.labels` is a character vector of the same length as `nrow(sc.dat)` to denote the cell state of each cell in the reference. In our example, cell states of malignant cells were obtained by sub-clustering the malignant cells from each patient, and cell states of myeloid cells were obtained by clustering myeloid cells from all patients. We define multiple cell states for these two cell types, as they contain substantial heterogeneity while also having sufficient number of cells for sub-clustering.
+
+Please make sure that all cell states contain a reasonable number of cells, e.g. >20 or >50, so that their profile can be represented accurately.
+
+```{r, eval = FALSE}
+PBMCbulk <- read.table(file = "PBMC_ARCHIVE/Fig2b-WholeBlood_RNAseq.txt", header = TRUE,sep = "\t")
+rownames(PBMCbulk) <- PBMCbulk[,1]
+PBMCbulk<-PBMCbulk[,-1]
+
+PBMCref <- read.table(file = "PBMC_ARCHIVE/Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt", header = TRUE,sep = "\t")
+rownames(PBMCref) <- PBMCref[,1]
+PBMCref<-PBMCref[,-1]
+head(PBMCref[,1:3])
+head(PBMCbulk[,1:3])
+
+
+bk.dat <- t(as.matrix(PBMCbulk,byrow = TRUE,
+                      dimnames = list(rownames(PBMCbulk),
+                                      colnames(PBMCbulk))))
+#head(bk.dat[,1:5])
+head(bk.dat[,1:5])
+head(PBMCref[,1:5])
+sc.dat <- t(as.matrix(PBMCref,byrow = TRUE,
+                      dimnames = list(rownames(PBMCref),
+                                      colnames(PBMCref))))
+head(PBMCref[,1:5])
+
+
+PBMCref_cell <- colnames(PBMCref)
+# Cell types
+PBMCcell_types <- c("B.cells", "T.cells.CD4", "T.cells.CD8", "NKT.cells", "NK.cells", "Monocytes")
+
+library(stringr)
+# Extract cell type and additional information using stringr
+matches <- str_match(PBMCref_cell, paste0("(", paste(PBMCcell_types, collapse = "|"), ")\\.?(.*)"))
+cell.type.labels<-matches[, 2]
+cell.state.labels<-gsub("\\.", "-", matches[, 1])
+
+sort(table(cell.type.labels))
+sort(table(cell.state.labels))
+table(cbind.data.frame(cell.state.labels, cell.type.labels))
+```
+
+
+
+## Filter outlier genes
+
+Gene expressed at high magnitude, such as ribosomal protein genes and mitochondrial genes, may dominate the distribution and bias the inference. These genes are often not informative in distinguishing cell types and can be a source of large spurious variance. As a result, they can be detrimental to deconvolution. We recommend the removal of these genes.
+
+Users may visualize the distribution of outlier genes from scRNA-seq reference. We compute the mean expression and of each gene across all cell types, and their cell type specificity scores.
+
+Visualize and determine outlier genes from scRNA-seq data
+
+Similarly, we may also visualize outlier genes from bulk RNA-seq. We compute the mean expression and of each gene across all cell types. As we do not have cell type level information from bulk data, we compute cell type specificity score from scRNA-seq, same as above.
+
+Visualize outlier genes in bulk RNA-seq
+
+```{r, eval = FALSE}
+sc.stat <- plot.scRNA.outlier(
+      input=sc.dat, #make sure the colnames are gene symbol or ENSMEBL ID
+      cell.type.labels=cell.type.labels,
+      species="hs", #currently only human(hs) and mouse(mm) annotations are supported
+      return.raw=TRUE #return the data used for plotting.
+      #pdf.prefix="gbm.sc.stat" specify pdf.prefix if need to output to pdf
+)
+bk.stat <- plot.bulk.outlier(
+      bulk.input=bk.dat,#make sure the colnames are gene symbol or ENSMEBL ID
+      sc.input=sc.dat, #make sure the colnames are gene symbol or ENSMEBL ID
+      cell.type.labels=cell.type.labels,
+      species="hs", #currently only human(hs) and mouse(mm) annotations are supported
+      return.raw=TRUE
+      #pdf.prefix="gbm.bk.stat" specify pdf.prefix if need to output to pdf
+)
+sc.dat.filtered <- cleanup.genes (input=sc.dat,
+                                  input.type="count.matrix",
+                                  species="hs",
+                                  gene.group=c( "Rb","Mrp","other_Rb","chrM","MALAT1","chrX","chrY") ,
+                                  exp.cells=5)
+dim(sc.dat.filtered)
+
+sc.dat.filtered.pc <-  select.gene.type (sc.dat.filtered,
+                                         gene.type = "protein_coding")
+```
+
+
+
+
+## Construct a prism object.
+```{r, eval = FALSE}
+myPrism <- new.prism(
+  reference=sc.dat.filtered.pc, 
+  mixture=bk.dat,
+  input.type="count.matrix", 
+  cell.type.labels = cell.type.labels, 
+  cell.state.labels = cell.state.labels,
+  key="tumor",
+  outlier.cut=0.01,
+  outlier.fraction=0.1,
+)
+```
+
+
+
+## Run BayesPrism
+
+Parameters to control Gibbs sampling and optimization can be specified using gibbs.control and opt.control. Do ?run.prism for details. We recommend the use of default parameters.
+```{r, eval = FALSE}
+bp.res <- run.prism(prism = myPrism, n.cores=50)
+```
+
+## Report the summary statistics and Extract results
+```{r, eval = FALSE}
+bp.res
+slotNames(bp.res)
+```
+
+
+"prism" is the input prism.
+"posterior.initial.cellState" is the result of step 2.
+"posterior.initial.cellType" is the result of step 3.
+"reference.update" is the updated reference ψ
+.
+"posterior.theta_f" is the result of step 4.
+"control_param" contains the parameters to run BayesPrism.
+
+```{r, eval = FALSE}
+# extract posterior mean of cell type fraction theta
+theta <- get.fraction (bp=bp.res,
+                       which.theta="final",
+                       state.or.type="type")
+
+head(theta)
+# # extract coefficient of variation (CV) of cell type fraction
+# theta.cv <- bp.res@posterior.theta_f@theta.cv
+# 
+# head(theta.cv)
+
+saveRDS(theta_PBMC, "PBMC_ARCHIVED/PBMC_theta.rds")
+#saveRDS(theta.cv_PBMC, "PBMC_ARCHIVED/PBMC_theta.cv.rds")
+```
+
+
+
+## Analysis PBMC
+recall
+```{r PBMC input}
+B.PBMC<-read.table(file = "PBMC_ARCHIVE/Fig2b-WholeBlood_RNAseq.txt", header = TRUE,sep = "\t")
+rownames(B.PBMC)<-B.PBMC[,1]
+B.PBMC<-B.PBMC[,-1]
+  
+A.PBMC<-read.table(file = "PBMC_ARCHIVE/Fig2ab-NSCLC_PBMCs_scRNAseq_sigmatrix.txt", header = TRUE,sep = "\t")
+rownames(A.PBMC)<-A.PBMC[,1]
+A.PBMC<-A.PBMC[,-1]
+
+ref.PBMC<-read.table(file = "PBMC_ARCHIVE/Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt", header = TRUE,sep = "\t")
+rownames(ref.PBMC)<-ref.PBMC[,1]
+ref.PBMC<-ref.PBMC[,-1]
+
+
+cyb_P.PBMC<-read.table(file = "PBMC_ARCHIVE/CIBERSORTx_PBMC_Adjusted.txt", header = TRUE,sep = "\t")
+rownames(cyb_P.PBMC)<-cyb_P.PBMC[,1]
+cyb_P.PBMC<-cyb_P.PBMC[,-1]
+
+bp_P.PBMC<-readRDS("PBMC_ARCHIVE/PBMC_theta.rds")
+
+true_P.PBMC<-read.table(file = "PBMC_ARCHIVE/ground_truth_whole_blood.txt", header = TRUE,sep = "\t")
+rownames(true_P.PBMC)<-true_P.PBMC[,1]
+true_P.PBMC<-true_P.PBMC[,-1]
+
+
+head(A.PBMC[,1:5])
+head(B.PBMC[,1:5])
+head(ref.PBMC[,1:5])
+
+head(cyb_P.PBMC)
+head(bp_P.PBMC)
+head(true_P.PBMC)
+```
+
+```{r PBMC transform mat}
+mat.A.PBMC<-as.matrix(A.PBMC)
+celltype.PBMC <- colnames(A.PBMC)
+celltype.PBMC %in% colnames(true_P.PBMC)
+# [1]  TRUE  TRUE  TRUE FALSE  TRUE  TRUE
+# discard "NKT.cells"
+mat.A.PBMC <- mat.A.PBMC[,-4]
+celltype.PBMC <- celltype.PBMC[-4]
+
+
+mat.true_P.PBMC<-as.matrix(true_P.PBMC[,celltype.PBMC])
+mat.cyb_P.PBMC <-as.matrix(cyb_P.PBMC[,celltype.PBMC])
+mat.bp_P.PBMC  <-as.matrix(bp_P.PBMC[,celltype.PBMC])
+
+hat_true_B.PBMC <- mat.A.PBMC %*% t(mat.true_P.PBMC)
+hat_cyb_B.PBMC  <- mat.A.PBMC %*% t(mat.cyb_P.PBMC)
+hat_bp_B.PBMC   <- mat.A.PBMC %*% t(mat.bp_P.PBMC)
+
+# find pair of samples in real and estimated bulk
+sample.PBMC<- intersect(row.names(hat_true_B.PBMC),row.names(B.PBMC))
+hat_true_B.PBMC2<-hat_true_B.PBMC[sample.PBMC,]
+hat_cyb_B.PBMC2 <-hat_cyb_B.PBMC[sample.PBMC,]
+hat_pb_B.PBMC2  <-hat_bp_B.PBMC[sample.PBMC,]
+```
+
+```{r performance evaluation}
+library(ggplot2)
+library(RColorBrewer)
+library(gridExtra)
+# library(knitr)
+
+# 5.1 Cell Type Proportions Analysis
+celleval<-function(hat_P,hat2_P,P){ # hat1 for CybersortX hat2 for BayesPrism
+  # cell-type-level analysis
+  MSE_cell<-apply((P-hat_P)^2,2,mean)
+  r_cell  <-apply((hat_P-apply(hat_P,2,mean))*(P-apply(P,2,mean)),2,sum)/
+    (sqrt(apply((hat_P-apply(hat_P,2,mean))^2,2,sum))*sqrt(apply((P-apply(P,2,mean))^2,2,sum)))
+  # sample-level analysis
+  MSE_samp<-apply((P-hat_P)^2,1,mean)
+  r_samp  <-apply((hat_P-apply(hat_P,1,mean))*(P-apply(P,1,mean)),1,sum)/
+    (sqrt(apply((hat_P-apply(hat_P,1,mean))^2,1,sum))*sqrt(apply((P-apply(P,1,mean))^2,1,sum)))
+  # overall
+  MSE_all<-mean((P-hat_P)^2)
+  r_all  <-sum(hat_P-mean(hat_P)*(P-mean(P)))/
+    (norm(hat_P-mean(hat_P))*norm(P-mean(P)))
+  ##############################################
+  # cell-type-level analysis
+  MSE_cell2<-apply((P-hat2_P)^2,2,mean)
+  r_cell2  <-apply((hat2_P-apply(hat2_P,2,mean))*(P-apply(P,2,mean)),2,sum)/
+        (sqrt(apply((hat2_P-apply(hat2_P,2,mean))^2,2,sum))*sqrt(apply((P-apply(P,2,mean))^2,2,sum)))
+  # sample-level analysis
+  MSE_samp2<-apply((P-hat2_P)^2,1,mean)
+  r_samp2  <-apply((hat2_P-apply(hat2_P,1,mean))*(P-apply(P,1,mean)),1,sum)/
+        (sqrt(apply((hat2_P-apply(hat2_P,1,mean))^2,1,sum))*sqrt(apply((P-apply(P,1,mean))^2,1,sum)))
+  # overall
+  MSE_all2<-mean((P-hat2_P)^2)
+  r_all2  <-sum(hat2_P-mean(hat2_P)*(P-mean(P)))/
+        (norm(hat2_P-mean(hat2_P))*norm(P-mean(P)))
+  
+  mlist<-list(cell_level=matrix(rbind(MSE_cell,MSE_cell2,r_cell,r_cell2),nrow=4,byrow=T,
+                                dimnames=
+                                      list(c("MSE_cell_CybersortX","MSE_cell_BayesPrism","r_Cell_CybersortX","r_Cell_BayesPrism"),
+                                           names(MSE_cell))),
+              samp_level=matrix(rbind(MSE_samp,MSE_samp2,r_samp,r_samp2),nrow=4,byrow=T,
+                                dimnames=
+                                      list(c("MSE_samp_CybersortX","MSE_samp_BayesPrism","r_samp_CybersortX","r_samp_BayesPrism"),
+                                           names(MSE_samp))),
+              all_level=matrix(c(MSE_all,MSE_all2,r_all,r_all2),ncol=2,byrow=T,
+                               dimnames=list(c("overall_CybersortX","overall_BayesPrism"),c("MSE_all","r_all"))))
+  return(mlist)
+
+}
+
+# 5.2 Bulk Analysis
+visualp<-function(hat_P,hat2_P,P){
+df <- data.frame(x = c(P),
+                 y = c(hat_P),
+                 col = rep(colnames(P), each = nrow(P))
+)
+
+df2 <- data.frame(x = c(P),
+                  y = c(hat2_P),
+                  col = rep(colnames(P), each = nrow(P))
+)
+    
+# Define colors dynamically based on column names
+custom_colors <- brewer.pal(9, "Set1")[1:dim(P)[2]]
+color_mapping_df <- setNames(custom_colors, as.character(colnames(P)))
+color_mapping_df2 <- setNames(custom_colors, as.character(colnames(P)))
+
+# Plot
+p1 <- ggplot(df, aes(x = x, y = y, color = as.factor(col))) +
+  geom_point(size = 4) +
+  scale_color_manual(values = color_mapping_df) +
+  labs(color = "Cell", x = "P", y = expression(hat(P))) +  # LaTeX expression for \hat{P}
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Diagonal line
+  ggtitle("CybersortX") +
+  theme_minimal()
+
+p2 <- ggplot(df2, aes(x = x, y = y, color = as.factor(col))) +
+  geom_point(size = 4) +
+  scale_color_manual(values = color_mapping_df2) +
+  labs(color = "Cell", x = "P", y = expression(hat(P))) +  # LaTeX expression for \hat{P}
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Diagonal line
+  ggtitle("BayesPrism") +
+  theme_minimal()
+
+# Combine plots side by side
+grid.arrange(p1, p2, ncol = 2)
+}
+
+```
+
+```{r analysis result for PBMC, fig.width=12,fig.height=5}
+# 5.1
+table_P.PBMC<-(celleval(hat2_P=mat.cyb_P.PBMC,hat_P=mat.bp_P.PBMC,P=mat.true_P.PBMC))
+table_B.PBMC<-(celleval(hat2_P=t(hat_cyb_B.PBMC2),hat_P=t(hat_pb_B.PBMC2),P=t(hat_true_B.PBMC2)))
+# 5.2
+visualp(hat_P=mat.cyb_P.PBMC,hat2_P=mat.bp_P.PBMC,P=mat.true_P.PBMC)
+
+```
+Tables for fraction estimation (PBMC):
+      
+```{r t1,echo=FALSE}
+i=1
+knitr::kable(table_P.PBMC[[i]], col.names = gsub("[.]", " ",  colnames(table_P.PBMC[[i]])))
+```
+
+```{r t2,echo=FALSE}
+i=2
+knitr::kable(t(table_P.PBMC[[i]]), col.names = gsub("[.]", " ",  rownames(table_P.PBMC[[i]])))
+```
+
+```{r t3,echo=FALSE}
+i=3
+knitr::kable(table_P.PBMC[[i]], col.names = gsub("[.]", " ",  colnames(table_P.PBMC[[i]])))
+```
+
+Tables for bulk estimation (PBMC):
+      
+```{r t2b,echo=FALSE}
+i=2
+knitr::kable(t(table_B.PBMC[[i]]), col.names = gsub("[.]", " ",  rownames(table_B.PBMC[[i]])))
+```
+
+```{r t3b,echo=FALSE}
+i=3
+knitr::kable(table_B.PBMC[[i]], col.names = gsub("[.]", " ",  colnames(table_B.PBMC[[i]])))
+```
+
+
+
+## Analysis pancreas
+recall
+```{r pancreas input}
+B.pancreas<-read.table(file = "pancreas_ARCHIVE/pancreas_bulk_v2.txt", header = TRUE,sep = "\t")
+rownames(B.pancreas)<-B.pancreas[,1]
+B.pancreas<-B.pancreas[,-1]
+
+A.pancreas<-read.table(file = "pancreas_ARCHIVE/pancreas_inferred_phenoclasses.txt", header = TRUE,sep = "\t")
+rownames(A.pancreas)<-A.pancreas[,1]
+A.pancreas<-A.pancreas[,-1]
+dim(A.pancreas)
+
+ref.pancreas<-read.table(file = "pancreas_ARCHIVE/pancreas_scref_v2.txt", header = TRUE,sep = "\t")
+rownames(ref.pancreas)<-ref.pancreas[,1]
+ref.pancreas<-ref.pancreas[,-1]
+
+
+cyb_P.pancreas<-read.table(file = "pancreas_ARCHIVE/CIBERSORTx_pancreas_Adjusted.txt", header = TRUE,sep = "\t")
+rownames(cyb_P.pancreas)<-cyb_P.pancreas[,1]
+cyb_P.pancreas<-cyb_P.pancreas[,-1]
+
+bp_P.pancreas<-readRDS("pancreas_ARCHIVE/pancreas_theta.rds")[,c("acinar", "alpha", "beta", "delta", "ductal", "endothelial", "epsilon", "gamma", "mast", "PSC")] # bp.posterior.initial.cellType.theta.rds") # 
+
+true_P.pancreas<-read.table(file = "pancreas_ARCHIVE/pancreas_truth.txt", header = TRUE,sep = "\t")
+
+
+head(A.pancreas[,1:5])
+head(B.pancreas[,1:5])
+head(ref.pancreas[,1:5])
+
+head(cyb_P.pancreas)
+head(bp_P.pancreas)
+head(true_P.pancreas)
+```
+
+```{r pancreas transform mat}
+mat.A.pancreas<-as.matrix(A.pancreas)
+celltype.pancreas <- colnames(A.pancreas)
+celltype.pancreas %in% colnames(true_P.pancreas)
+# [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+celltype.pancreas %in% colnames(cyb_P.pancreas)
+# [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE
+celltype.pancreas %in% colnames(bp_P.pancreas)
+# [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# discard "mast" (cyb_P)
+mat.A.pancreas <- mat.A.pancreas[,-9]
+celltype.pancreas <- celltype.pancreas[-9]
+
+
+mat.true_P.pancreas<-as.matrix(true_P.pancreas[,celltype.pancreas])
+mat.cyb_P.pancreas <-as.matrix(cyb_P.pancreas[,celltype.pancreas])
+mat.bp_P.pancreas  <-as.matrix(bp_P.pancreas[,celltype.pancreas])
+
+hat_true_B.pancreas <- mat.A.pancreas %*% t(mat.true_P.pancreas)
+hat_cyb_B.pancreas  <- mat.A.pancreas %*% t(mat.cyb_P.pancreas)
+hat_bp_B.pancreas   <- mat.A.pancreas %*% t(mat.bp_P.pancreas)
+
+# find pair of samples in real and estimated bulk
+sample.pancreas<- intersect(row.names(hat_true_B.pancreas),row.names(B.pancreas))
+hat_true_B.pancreas2<-hat_true_B.pancreas[sample.pancreas,]
+hat_cyb_B.pancreas2 <-hat_cyb_B.pancreas[sample.pancreas,]
+hat_pb_B.pancreas2  <-hat_bp_B.pancreas[sample.pancreas,]
+```
+
+```{r analysis result for pancreas, fig.width=12,fig.height=5}
+# 5.1
+table_P.pancreas<-(celleval(hat2_P=mat.cyb_P.pancreas,hat_P=mat.bp_P.pancreas,P=mat.true_P.pancreas))
+table_B.pancreas<-(celleval(hat2_P=t(hat_cyb_B.pancreas2),hat_P=t(hat_pb_B.pancreas2),P=t(hat_true_B.pancreas2)))
+# 5.2
+visualp(hat_P=mat.cyb_P.pancreas,hat2_P=mat.bp_P.pancreas,P=mat.true_P.pancreas)
+
+```
+Tables for fraction estimation (pancreas):
+
+```{r t1.2,echo=FALSE}
+i=1
+knitr::kable(table_P.pancreas[[i]], col.names = gsub("[.]", " ",  colnames(table_P.pancreas[[i]])))
+```
+
+```{r t2.2,echo=FALSE}
+i=2
+knitr::kable(t(table_P.pancreas[[i]]), col.names = gsub("[.]", " ",  rownames(table_P.pancreas[[i]])))
+```
+
+```{r t3.2,echo=FALSE}
+i=3
+knitr::kable(table_P.pancreas[[i]], col.names = gsub("[.]", " ",  colnames(table_P.pancreas[[i]])))
+```
+
+Tables for bulk estimation (pancreas):
+      
+```{r t2.2b,echo=FALSE}
+i=2
+knitr::kable(t(table_B.pancreas[[i]]), col.names = gsub("[.]", " ",  rownames(table_B.pancreas[[i]])))
+```
+
+```{r t3.2b,echo=FALSE}
+i=3
+knitr::kable(table_B.pancreas[[i]], col.names = gsub("[.]", " ",  colnames(table_B.pancreas[[i]])))
+```
+

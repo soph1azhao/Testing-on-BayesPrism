@@ -1,0 +1,243 @@
+Using: R --vanilla --slave --args 16 /ocean/projects/bio210011p/dreg2016/BayesPrism-gateway -x pancreas_bulk_v2.tsv -x.type tsv -ref pancreas_scref_v2.tsv -ref.file.type tsv -ref.data.type scRNA -file.cell.type pancreasref_cellprofile.csv -species hs -out out < /ocean/projects/bio210011p/dreg2016/BayesPrism-gateway/run_bayes.R
+CPU cores: 16 
+Bulk count matrix: pancreas_bulk_v2.tsv 
+Bulk file type: tsv 
+Reference count matrix: pancreas_scref_v2.tsv 
+Reference file type: tsv 
+Reference data type: scrna 
+file of cell type: pancreasref_cellprofile.csv 
+Output prefix: out 
+Species: hs 
+1) -------- Load count matrix 
+[1] "[X matrix]\n"
+ int [1:25525, 1:7] 360 388 3679 118 1522 335 4046 1623 1922 664 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:25525] "SGIP1" "AZIN2" "CLIC4" "AGBL4" ...
+  ..$ : chr [1:7] "HP1504101T2D_wholeislet" "HP1506401_wholeislet" "HP1504901_wholeislet" "HP1508501T2D_wholeislet" ...
+NULL
+        HP1504101T2D_wholeislet HP1506401_wholeislet HP1504901_wholeislet HP1508501T2D_wholeislet HP1507101_wholeislet
+SGIP1                       360                  616                  204                     567                  171
+AZIN2                       388                  344                  434                     405                  729
+CLIC4                      3679                 2753                 4151                    5125                 3241
+AGBL4                       118                  155                  209                     137                  289
+NECAP2                     1522                 1737                 1562                    2754                 1870
+SLC45A1                     335                  376                  288                     343                  372
+[1] "[Reference matrix]\n"
+ int [1:25525, 1:410] 0 0 3 0 0 0 0 55 4 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:25525] "SGIP1" "AZIN2" "CLIC4" "AGBL4" ...
+  ..$ : chr [1:410] "delta" "alpha" "delta.1" "gamma" ...
+NULL
+        delta alpha delta.1 gamma ductal
+SGIP1       0     0       0    32      0
+AZIN2       0     0       0     0      0
+CLIC4       3     0       3     1      0
+AGBL4       0     0       0     0      0
+NECAP2      0     0       0     0      0
+SLC45A1     0     0       0     0      0
+[1] "[Cell type]\n"
+'data.frame':	410 obs. of  4 variables:
+ $ cell_ID     : chr  "delta" "alpha" "delta.1" "gamma" ...
+ $ cell_type   : chr  "delta" "alpha" "delta" "gamma" ...
+ $ cell_subtype: chr  "delta" "alpha" "delta-1" "gamma" ...
+ $ tumor_state : int  1 1 1 1 1 1 1 1 1 1 ...
+NULL
+  cell_ID cell_type cell_subtype tumor_state
+1   delta     delta        delta           1
+2   alpha     alpha        alpha           1
+3 delta.1     delta      delta-1           1
+4   gamma     gamma        gamma           1
+5  ductal    ductal       ductal           1
+6 alpha.1     alpha      alpha-1           1
+  cell_ID cell_type cell_subtype tumor_state
+1   delta     delta        delta           1
+2   alpha     alpha        alpha           1
+3 delta.1     delta      delta-1           1
+4   gamma     gamma        gamma           1
+5  ductal    ductal       ductal           1
+* Warning: 410 Cells in your reference matrix are used to proceed the next step.
+null device 
+          1 
+null device 
+          1 
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+./file70365dfec99/
+./file70365dfec99/out.cor.cs_cor_phi.pdf
+./file70365dfec99/out.cor.ct_cor_phi.pdf
+./file70365dfec99/out.stat_scRNA_outlier.pdf
+./file70365dfec99/out.bk.stat_bulk_outlier.pdf
+2) -------- Start bayesPrism 
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+number of genes filtered in each category: 
+other_Rb     chrM     chrX     chrY       Rb      Mrp 
+      44        0      986      101       89       78 
+A total of  1252  genes from other_Rb chrM chrX chrY Rb Mrp  have been excluded 
+A total of  14019  gene expressed in fewer than  5  cells have been excluded 
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+number of cells in each cell state 
+cell.state.labels
+        PSC-1_tumor         PSC-2_tumor         PSC-3_tumor         PSC-4_tumor           PSC_tumor     acinar-10_tumor 
+                  1                   1                   1                   1                   1                   1 
+    acinar-11_tumor     acinar-12_tumor     acinar-13_tumor     acinar-14_tumor     acinar-15_tumor     acinar-16_tumor 
+                  1                   1                   1                   1                   1                   1 
+    acinar-17_tumor     acinar-18_tumor     acinar-19_tumor      acinar-1_tumor     acinar-20_tumor     acinar-21_tumor 
+                  1                   1                   1                   1                   1                   1 
+    acinar-22_tumor     acinar-23_tumor     acinar-24_tumor     acinar-25_tumor      acinar-2_tumor      acinar-3_tumor 
+                  1                   1                   1                   1                   1                   1 
+     acinar-4_tumor      acinar-5_tumor      acinar-6_tumor      acinar-7_tumor      acinar-8_tumor      acinar-9_tumor 
+                  1                   1                   1                   1                   1                   1 
+       acinar_tumor     alpha-100_tumor     alpha-101_tumor     alpha-102_tumor     alpha-103_tumor     alpha-104_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-105_tumor     alpha-106_tumor     alpha-107_tumor     alpha-108_tumor     alpha-109_tumor      alpha-10_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-110_tumor     alpha-111_tumor     alpha-112_tumor     alpha-113_tumor     alpha-114_tumor     alpha-115_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-116_tumor     alpha-117_tumor     alpha-118_tumor     alpha-119_tumor      alpha-11_tumor     alpha-120_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-121_tumor     alpha-122_tumor     alpha-123_tumor     alpha-124_tumor     alpha-125_tumor     alpha-126_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-127_tumor     alpha-128_tumor     alpha-129_tumor      alpha-12_tumor     alpha-130_tumor     alpha-131_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-132_tumor     alpha-133_tumor     alpha-134_tumor     alpha-135_tumor     alpha-136_tumor     alpha-137_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-138_tumor     alpha-139_tumor      alpha-13_tumor     alpha-140_tumor     alpha-141_tumor     alpha-142_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-143_tumor     alpha-144_tumor     alpha-145_tumor     alpha-146_tumor     alpha-147_tumor     alpha-148_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-149_tumor      alpha-14_tumor     alpha-150_tumor     alpha-151_tumor     alpha-152_tumor     alpha-153_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-154_tumor     alpha-155_tumor     alpha-156_tumor     alpha-157_tumor     alpha-158_tumor     alpha-159_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-15_tumor     alpha-160_tumor     alpha-161_tumor     alpha-162_tumor     alpha-163_tumor     alpha-164_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-165_tumor     alpha-166_tumor     alpha-167_tumor     alpha-168_tumor     alpha-169_tumor      alpha-16_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-170_tumor     alpha-171_tumor     alpha-172_tumor     alpha-173_tumor     alpha-174_tumor     alpha-175_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-176_tumor     alpha-177_tumor     alpha-178_tumor     alpha-179_tumor      alpha-17_tumor     alpha-180_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-181_tumor     alpha-182_tumor     alpha-183_tumor     alpha-184_tumor     alpha-185_tumor     alpha-186_tumor 
+                  1                   1                   1                   1                   1                   1 
+    alpha-187_tumor     alpha-188_tumor      alpha-18_tumor      alpha-19_tumor       alpha-1_tumor      alpha-20_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-21_tumor      alpha-22_tumor      alpha-23_tumor      alpha-24_tumor      alpha-25_tumor      alpha-26_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-27_tumor      alpha-28_tumor      alpha-29_tumor       alpha-2_tumor      alpha-30_tumor      alpha-31_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-32_tumor      alpha-33_tumor      alpha-34_tumor      alpha-35_tumor      alpha-36_tumor      alpha-37_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-38_tumor      alpha-39_tumor       alpha-3_tumor      alpha-40_tumor      alpha-41_tumor      alpha-42_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-43_tumor      alpha-44_tumor      alpha-45_tumor      alpha-46_tumor      alpha-47_tumor      alpha-48_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-49_tumor       alpha-4_tumor      alpha-50_tumor      alpha-51_tumor      alpha-52_tumor      alpha-53_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-54_tumor      alpha-55_tumor      alpha-56_tumor      alpha-57_tumor      alpha-58_tumor      alpha-59_tumor 
+                  1                   1                   1                   1                   1                   1 
+      alpha-5_tumor      alpha-60_tumor      alpha-61_tumor      alpha-62_tumor      alpha-63_tumor      alpha-64_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-65_tumor      alpha-66_tumor      alpha-67_tumor      alpha-68_tumor      alpha-69_tumor       alpha-6_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-70_tumor      alpha-71_tumor      alpha-72_tumor      alpha-73_tumor      alpha-74_tumor      alpha-75_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-76_tumor      alpha-77_tumor      alpha-78_tumor      alpha-79_tumor       alpha-7_tumor      alpha-80_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-81_tumor      alpha-82_tumor      alpha-83_tumor      alpha-84_tumor      alpha-85_tumor      alpha-86_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-87_tumor      alpha-88_tumor      alpha-89_tumor       alpha-8_tumor      alpha-90_tumor      alpha-91_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-92_tumor      alpha-93_tumor      alpha-94_tumor      alpha-95_tumor      alpha-96_tumor      alpha-97_tumor 
+                  1                   1                   1                   1                   1                   1 
+     alpha-98_tumor      alpha-99_tumor       alpha-9_tumor         alpha_tumor       beta-10_tumor       beta-11_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-12_tumor       beta-13_tumor       beta-14_tumor       beta-15_tumor       beta-16_tumor       beta-17_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-18_tumor       beta-19_tumor        beta-1_tumor       beta-20_tumor       beta-21_tumor       beta-22_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-23_tumor       beta-24_tumor       beta-25_tumor       beta-26_tumor       beta-27_tumor       beta-28_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-29_tumor        beta-2_tumor       beta-30_tumor       beta-31_tumor       beta-32_tumor       beta-33_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-34_tumor       beta-35_tumor       beta-36_tumor       beta-37_tumor       beta-38_tumor       beta-39_tumor 
+                  1                   1                   1                   1                   1                   1 
+       beta-3_tumor       beta-40_tumor       beta-41_tumor       beta-42_tumor       beta-43_tumor       beta-44_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-45_tumor       beta-46_tumor       beta-47_tumor       beta-48_tumor       beta-49_tumor        beta-4_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-50_tumor       beta-51_tumor       beta-52_tumor       beta-53_tumor       beta-54_tumor       beta-55_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-56_tumor       beta-57_tumor       beta-58_tumor       beta-59_tumor        beta-5_tumor       beta-60_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-61_tumor       beta-62_tumor       beta-63_tumor       beta-64_tumor       beta-65_tumor       beta-66_tumor 
+                  1                   1                   1                   1                   1                   1 
+      beta-67_tumor       beta-68_tumor       beta-69_tumor        beta-6_tumor        beta-7_tumor        beta-8_tumor 
+                  1                   1                   1                   1                   1                   1 
+       beta-9_tumor          beta_tumor      delta-10_tumor      delta-11_tumor      delta-12_tumor      delta-13_tumor 
+                  1                   1                   1                   1                   1                   1 
+     delta-14_tumor      delta-15_tumor      delta-16_tumor      delta-17_tumor      delta-18_tumor      delta-19_tumor 
+                  1                   1                   1                   1                   1                   1 
+      delta-1_tumor      delta-20_tumor      delta-21_tumor      delta-22_tumor      delta-23_tumor      delta-24_tumor 
+                  1                   1                   1                   1                   1                   1 
+     delta-25_tumor      delta-26_tumor      delta-27_tumor      delta-28_tumor      delta-29_tumor       delta-2_tumor 
+                  1                   1                   1                   1                   1                   1 
+     delta-30_tumor      delta-31_tumor      delta-32_tumor      delta-33_tumor      delta-34_tumor      delta-35_tumor 
+                  1                   1                   1                   1                   1                   1 
+     delta-36_tumor      delta-37_tumor       delta-3_tumor       delta-4_tumor       delta-5_tumor       delta-6_tumor 
+                  1                   1                   1                   1                   1                   1 
+      delta-7_tumor       delta-8_tumor       delta-9_tumor         delta_tumor     ductal-10_tumor     ductal-11_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-12_tumor     ductal-13_tumor     ductal-14_tumor     ductal-15_tumor     ductal-16_tumor     ductal-17_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-18_tumor     ductal-19_tumor      ductal-1_tumor     ductal-20_tumor     ductal-21_tumor     ductal-22_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-23_tumor     ductal-24_tumor     ductal-25_tumor     ductal-26_tumor     ductal-27_tumor     ductal-28_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-29_tumor      ductal-2_tumor     ductal-30_tumor     ductal-31_tumor     ductal-32_tumor     ductal-33_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-34_tumor     ductal-35_tumor     ductal-36_tumor     ductal-37_tumor     ductal-38_tumor     ductal-39_tumor 
+                  1                   1                   1                   1                   1                   1 
+     ductal-3_tumor     ductal-40_tumor     ductal-41_tumor     ductal-42_tumor     ductal-43_tumor     ductal-44_tumor 
+                  1                   1                   1                   1                   1                   1 
+    ductal-45_tumor      ductal-4_tumor      ductal-5_tumor      ductal-6_tumor      ductal-7_tumor      ductal-8_tumor 
+                  1                   1                   1                   1                   1                   1 
+     ductal-9_tumor        ductal_tumor endothelial-1_tumor endothelial-2_tumor endothelial-3_tumor   endothelial_tumor 
+                  1                   1                   1                   1                   1                   1 
+      epsilon_tumor      gamma-10_tumor      gamma-11_tumor      gamma-12_tumor      gamma-13_tumor      gamma-14_tumor 
+                  1                   1                   1                   1                   1                   1 
+     gamma-15_tumor      gamma-16_tumor      gamma-17_tumor      gamma-18_tumor      gamma-19_tumor       gamma-1_tumor 
+                  1                   1                   1                   1                   1                   1 
+     gamma-20_tumor      gamma-21_tumor      gamma-22_tumor      gamma-23_tumor      gamma-24_tumor      gamma-25_tumor 
+                  1                   1                   1                   1                   1                   1 
+     gamma-26_tumor       gamma-2_tumor       gamma-3_tumor       gamma-4_tumor       gamma-5_tumor       gamma-6_tumor 
+                  1                   1                   1                   1                   1                   1 
+      gamma-7_tumor       gamma-8_tumor       gamma-9_tumor         gamma_tumor                mast              mast-1 
+                  1                   1                   1                   1                   1                   1 
+             mast-2              mast-3 
+                  1                   1 
+recommend to have sufficient number of cells in each cell state 
+Number of outlier genes filtered from mixture = 5 
+Aligning reference and mixture... 
+Normalizing reference... 
+Run Gibbs sampling... 
+Current time:  2023-12-17 18:21:21.823037 
+Estimated time to complete:  20mins 
+Estimated finishing time:  2023-12-17 18:40:35.503037 
+Start run... 
+R Version:  R version 4.3.2 (2023-10-31) 
+
+Update the reference matrix ... 
+Run Gibbs sampling using updated reference ... 
+Current time:  2023-12-17 18:33:57.363899 
+Estimated time to complete:  3mins 
+Estimated finishing time:  2023-12-17 18:36:27.603899 
+Start run... 
+3) -------- Learning embeddings of tumor expression BayesPrism 
+4) -------- save RDS.
+./file703635a39b1/
+./file703635a39b1/bp.posterior.initial.cellType.Z.rds
+./file703635a39b1/bp.posterior.initial.cellType.theta.rds
+./file703635a39b1/bp.posterior.initial.cellType.theta.cv.rds
+./file703635a39b1/bp.posterior.theta_f.theta.cv.rds
+./file703635a39b1/bp.posterior.theta_f.theta.rds
+5) -------- End successfully. 

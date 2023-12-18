@@ -1,0 +1,35 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   241  100   120  100   121   1121   1130 --:--:-- --:--:-- --:--:--  2252
+Loading required package: BayesPrism
+Loading required package: snowfall
+Loading required package: snow
+Loading required package: NMF
+Loading required package: pkgmaker
+Loading required package: registry
+Loading required package: rngtools
+Loading required package: cluster
+NMF - BioConductor layer [OK] | Shared memory capabilities [OK] | Cores 127/128
+Warning messages:
+1: replacing previous import 'gplots::lowess' by 'stats::lowess' when loading 'BayesPrism' 
+2: replacing previous import 'BiocParallel::register' by 'NMF::register' when loading 'BayesPrism' 
+snowfall 1.84-6.1 initialized (using snow 0.4-3): parallel execution on 16 CPUs.
+
+
+Stopping cluster
+
+snowfall 1.84-6.1 initialized (using snow 0.4-3): parallel execution on 16 CPUs.
+
+
+Stopping cluster
+
+snowfall 1.84-6.1 initialized (using snow 0.4-3): parallel execution on 16 CPUs.
+
+
+Stopping cluster
+
+Warning message:
+In validityMethod(object) : Warning: pseudo.min does not match min(phi)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   243  100   120  100   123   1690   1732 --:--:-- --:--:-- --:--:--  3422
