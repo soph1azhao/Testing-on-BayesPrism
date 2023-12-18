@@ -1,0 +1,71 @@
+Using: R --vanilla --slave --args 16 /ocean/projects/bio210011p/dreg2016/BayesPrism-gateway -x Fig2b-WholeBlood_RNAseq.tsv -x.type tsv -ref Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.tsv -ref.file.type tsv -ref.data.type scRNA -file.cell.type PBMCref_cellprofile.csv -species hs -out out < /ocean/projects/bio210011p/dreg2016/BayesPrism-gateway/run_bayes.R
+CPU cores: 16 
+Bulk count matrix: Fig2b-WholeBlood_RNAseq.tsv 
+Bulk file type: tsv 
+Reference count matrix: Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.tsv 
+Reference file type: tsv 
+Reference data type: scrna 
+file of cell type: PBMCref_cellprofile.csv 
+Output prefix: out 
+Species: hs 
+1) -------- Load count matrix 
+[1] "[X matrix]\n"
+ num [1:58581, 1:12] 0 0 0 1.52 0.21 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:58581] "5_8S_RRNA" "5S_RRNA" "7SK" "A1BG" ...
+  ..$ : chr [1:12] "W070517001156" "W070517001157" "W070517001159" "W070517001160" ...
+NULL
+          W070517001156 W070517001157 W070517001159 W070517001160 W070517001161
+5_8S_RRNA      0.000000        0.0000       0.00000       0.00000       0.00000
+5S_RRNA        0.000000        0.0000       0.00000       0.00000       0.00000
+7SK            0.000000        0.0000       0.00000       0.00000       0.00000
+A1BG           1.524589        1.1982       2.28110       2.51096       1.75269
+A1BG-AS1       0.210020        0.2631       0.41086       0.57148       0.13972
+A1CF           0.007079        0.1094       0.02943       0.01291       0.02267
+[1] "[Reference matrix]\n"
+ num [1:16476, 1:1054] 0 0 0 0 0 0 0 0 0 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:16476] "RP11.34P13.7" "AL627309.1" "AP006222.2" "RP4.669L17.10" ...
+  ..$ : chr [1:1054] "T.cells.CD8" "T.cells.CD8.1" "T.cells.CD8.2" "Monocytes" ...
+NULL
+              T.cells.CD8 T.cells.CD8.1 T.cells.CD8.2 Monocytes Monocytes.1
+RP11.34P13.7            0             0             0         0           0
+AL627309.1              0             0             0         0           0
+AP006222.2              0             0             0         0           0
+RP4.669L17.10           0             0             0         0           0
+RP5.857K21.3            0             0             0         0           0
+RP11.206L10.3           0             0             0         0           0
+[1] "[Cell type]\n"
+'data.frame':	1054 obs. of  4 variables:
+ $ cell.ID     : chr  "T.cells.CD8" "T.cells.CD8.1" "T.cells.CD8.2" "Monocytes" ...
+ $ cell.type   : chr  "T.cells.CD8" "T.cells.CD8" "T.cells.CD8" "Monocytes" ...
+ $ cell.subtype: chr  "T-cells-CD8" "T-cells-CD8-1" "T-cells-CD8-2" "Monocytes" ...
+ $ tumor.state : int  1 1 1 1 1 1 1 1 1 1 ...
+NULL
+        cell.ID   cell.type  cell.subtype tumor.state
+1   T.cells.CD8 T.cells.CD8   T-cells-CD8           1
+2 T.cells.CD8.1 T.cells.CD8 T-cells-CD8-1           1
+3 T.cells.CD8.2 T.cells.CD8 T-cells-CD8-2           1
+4     Monocytes   Monocytes     Monocytes           1
+5   Monocytes.1   Monocytes   Monocytes-1           1
+6   T.cells.CD4 T.cells.CD4   T-cells-CD4           1
+* Warning: your reference matrix don't have consistent gene annotation with your bulk matrix. 13782 / 58581  genes can be matched.
+        cell.ID   cell.type  cell.subtype tumor.state
+1   T.cells.CD8 T.cells.CD8   T-cells-CD8           1
+2 T.cells.CD8.1 T.cells.CD8 T-cells-CD8-1           1
+3 T.cells.CD8.2 T.cells.CD8 T-cells-CD8-2           1
+4     Monocytes   Monocytes     Monocytes           1
+5   Monocytes.1   Monocytes   Monocytes-1           1
+* Warning: 1054 Cells in your reference matrix are used to proceed the next step.
+null device 
+          1 
+null device 
+          1 
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
+./file8269182401c/
+./file8269182401c/out.cor.cs_cor_phi.pdf
+./file8269182401c/out.cor.ct_cor_phi.pdf
+./file8269182401c/out.bk.stat_bulk_outlier.pdf
+2) -------- Start bayesPrism 
+Gene symbols detected. Recommend to use EMSEMBLE IDs for more unique mapping.
