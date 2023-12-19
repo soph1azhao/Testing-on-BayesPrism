@@ -5,11 +5,11 @@ library(scran)
 library(BiocParallel)
 library(devtools)
 suppressWarnings(library(BayesPrism))
-PBMCbulk <- read.table(file = "PBMC/Fig2b-WholeBlood_RNAseq.txt", header = TRUE,sep = "\t")
+PBMCbulk <- read.table(file = "PBMC_ARCHIVE/Fig2b-WholeBlood_RNAseq.txt", header = TRUE,sep = "\t")
 rownames(PBMCbulk) <- PBMCbulk[,1]
 PBMCbulk<-PBMCbulk[,-1]
 
-PBMCref <- read.table(file = "PBMC/Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt", header = TRUE,sep = "\t")
+PBMCref <- read.table(file = "PBMC_ARCHIVE/Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt", header = TRUE,sep = "\t")
 rownames(PBMCref) <- PBMCref[,1]
 PBMCref<-PBMCref[,-1]
 head(PBMCref[,1:3])
