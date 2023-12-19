@@ -93,5 +93,5 @@ theta_PBMC <- get.fraction (bp=bp.res_PBMC,
 
 print(head(theta_PBMC))
 
-saveRDS(theta_PBMC, "PBMC_theta.rds")
+saveRDS(theta_PBMC, "PBMC_ARCHIVE/PBMC_theta.rds")
 
