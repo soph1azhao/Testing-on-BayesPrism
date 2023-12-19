@@ -2,7 +2,9 @@
 Project for STAT 556
 
 ## File information
-excute_PBMC.r: R script for generate cell type fraction on BayesPrism package.
+excute_pancreas.r: R script for generate cell type fraction on BayesPrism package for pancreas dataset.
+
+excute_PBMC.r: R script for generate cell type fraction on BayesPrism package for PBMC dataset.
 
 bulk_RNA-seq_deconvolution_BayesPrism_CybersortX.Rmd: R markdown for data analysis, detail information included.
 
