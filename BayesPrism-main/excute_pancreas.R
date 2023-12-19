@@ -18,11 +18,11 @@ suppressWarnings(library(BayesPrism))
 
 suppressWarnings(library(BayesPrism))
 
-pancreasbulk <- read.table(file = "pancreas/pancreas_bulk_v2.txt", header = TRUE,sep = "\t")
+pancreasbulk <- read.table(file = "pancreas_ARCHIVE/pancreas_bulk_v2.txt", header = TRUE,sep = "\t")
 rownames(pancreasbulk) <- pancreasbulk[,1]
 pancreasbulk<-pancreasbulk[,-1]
 
-pancreasref <- read.table(file = "pancreas/pancreas_scref_v2.txt", header = TRUE,sep = "\t")
+pancreasref <- read.table(file = "pancreas_ARCHIVE/pancreas_scref_v2.txt", header = TRUE,sep = "\t")
 rownames(pancreasref) <- pancreasref[,1]
 pancreasref<-pancreasref[,-1]
 head(pancreasref[,1:3])
@@ -137,6 +137,6 @@ Z.tumor <- get.exp (bp=bp.res,
 
 head(t(Z.tumor[1:5,]))
 
-saveRDS(theta, "pancreas_theta.rds")
-saveRDS(theta.cv, "pancreas_theta.cv.rds")
-saveRDS(theta.cv, "pancreas_theta.cv.rds")
+saveRDS(theta, "pancreas_ARCHIVE/pancreas_theta.rds")
+saveRDS(theta.cv, "pancreas_ARCHIVE/pancreas_theta.cv.rds")
+saveRDS(theta.cv, "pancreas_ARCHIVE/pancreas_theta.cv.rds")
