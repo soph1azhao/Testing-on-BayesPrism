@@ -45,3 +45,12 @@ cyb_P.pancreas:"pancreas_ARCHIVE/CIBERSORTx_pancreas_Adjusted.txt" -- obtained i
 bp_P.pancreas:"pancreas_ARCHIVE/pancreas_theta.rds" -- obtained in r package (BayesPrism)
 
 true_P.pancreas:"pancreas_ARCHIVE/pancreas_truth.txt"
+
+## procedure 
+step 1. run pancreas_excute.r to obtain "bp_P.pancreas"
+
+step 2. run PBMC_excute.r to obtain "bp_P.PBMC"
+
+step 3. run "bulk_RNA-seq_deconvolution_BayesPrism_CybersortX"
+
+Note that step 1 & 2 can be skipped, I have included the data in the file already.
