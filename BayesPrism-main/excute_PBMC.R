@@ -94,11 +94,4 @@ theta_PBMC <- get.fraction (bp=bp.res_PBMC,
 print(head(theta_PBMC))
 
 saveRDS(theta_PBMC, "PBMC_theta.rds")
-saveRDS(theta.cv_PBMC, "PBMC_theta.cv.rds")
 
-# extract coefficient of variation (CV) of cell type fraction
-theta.cv_PBMC <- bp.res_PBMC@posterior.theta_f@theta.cv
-
-print(head(theta.cv_PBMC))
-saveRDS(theta_PBMC, "PBMC/PBMC_theta.rds")
-saveRDS(theta.cv_PBMC, "PBMC/PBMC_theta.cv.rds")
