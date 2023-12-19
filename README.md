@@ -46,7 +46,7 @@ bp_P.pancreas:"pancreas_ARCHIVE/pancreas_theta.rds" -- obtained in r package (Ba
 
 true_P.pancreas:"pancreas_ARCHIVE/pancreas_truth.txt"
 
-## procedure 
+## Procedure for replicate the result:
 step 1. run pancreas_excute.r to obtain "bp_P.pancreas"
 
 step 2. run PBMC_excute.r to obtain "bp_P.PBMC"
